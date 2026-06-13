@@ -3,7 +3,12 @@
 import { redirect } from 'next/navigation';
 import bcrypt from 'bcryptjs';
 import { supabase } from '@/lib/supabase';
-import { createSession } from '@/lib/session';
+import { createSession, destroySession } from '@/lib/session';
+
+export async function logoutAction() {
+  destroySession();
+  redirect('/login');
+}
 
 export async function loginAction(formData) {
   const email = String(formData.get('email') || '').trim();

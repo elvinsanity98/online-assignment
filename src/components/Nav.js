@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { homePathFor } from '@/lib/auth';
+import { logoutAction } from '@/actions/auth';
 
 export default function Nav({ user }) {
   const links = !user
@@ -29,7 +30,9 @@ export default function Nav({ user }) {
               {user.role}
             </span>
             <Link href="/account/profile" className="btn btn-secondary btn-sm">Profile</Link>
-            <Link href="/logout" className="btn btn-secondary btn-sm">Log out</Link>
+            <form action={logoutAction}>
+              <button type="submit" className="btn btn-secondary btn-sm">Log out</button>
+            </form>
           </div>
         )}
       </div>
