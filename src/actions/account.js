@@ -31,3 +31,24 @@ export async function changePassword(formData) {
 
   redirect(back('Password changed successfully.', true));
 }
+
+export async function updateProfile(formData) {
+  const user = await requireLogin();
+  const sb = supabase();
+
+  const emoji = String(formData.get('avatar_emoji') || '🙂').slice(0, 8) || '🙂';
+  const color = String(formData.get('avatar_color') || '#4f46e5').slice(0, 16) || '#4f46e5';
+  const bio = String(formData.get('bio') || '').trim().slice(0, 500);
+  const status = String(formData.get('status') || '').trim().slice(0, 120);
+
+  const { error } = await sb.from('users').update({
+    avatar_emoji: emoji,
+    avatar_color: color,
+    bio: bio || null,
+    status: status || null,
+    status_updated_at: status ? new Date().toISOString() : null,
+  }).eq('id', user.id);
+
+  if (error) redirect('/account/profile?error=' + encodeURIComponent('Could not save your profile.'));
+  redirect('/account/profile?success=' + encodeURIComponent('Profile saved.'));
+}

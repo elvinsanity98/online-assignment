@@ -2,12 +2,34 @@
 -- Run this once in the Supabase dashboard: SQL Editor -> New query -> paste -> Run.
 
 create table if not exists users (
-  id            bigint generated always as identity primary key,
-  name          text not null,
-  email         text not null unique,
-  password_hash text not null,
-  role          text not null default 'student' check (role in ('teacher', 'student')),
-  created_at    timestamptz not null default now()
+  id                bigint generated always as identity primary key,
+  name              text not null,
+  email             text not null unique,
+  password_hash     text not null,
+  role              text not null default 'student' check (role in ('teacher', 'student')),
+  avatar_emoji      text not null default '🙂',
+  avatar_color      text not null default '#4f46e5',
+  bio               text,
+  status            text,
+  status_updated_at timestamptz,
+  created_at        timestamptz not null default now()
+);
+
+create table if not exists classes (
+  id          bigint generated always as identity primary key,
+  teacher_id  bigint not null references users(id) on delete cascade,
+  name        text not null,
+  description text,
+  color       text not null default '#4f46e5',
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists class_members (
+  id         bigint generated always as identity primary key,
+  class_id   bigint not null references classes(id) on delete cascade,
+  student_id bigint not null references users(id) on delete cascade,
+  joined_at  timestamptz not null default now(),
+  unique (class_id, student_id)
 );
 
 create table if not exists assignments (
@@ -55,6 +77,9 @@ create index if not exists idx_questions_assignment on questions(assignment_id);
 create index if not exists idx_submissions_assignment on submissions(assignment_id);
 create index if not exists idx_submissions_student on submissions(student_id);
 create index if not exists idx_answers_submission on answers(submission_id);
+create index if not exists idx_classes_teacher on classes(teacher_id);
+create index if not exists idx_class_members_class on class_members(class_id);
+create index if not exists idx_class_members_student on class_members(student_id);
 
 -- Note: this app talks to Supabase only from the server using the service_role key,
 -- which bypasses Row Level Security. RLS is left disabled for simplicity. If you later
