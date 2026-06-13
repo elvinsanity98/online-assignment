@@ -2,8 +2,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
-import { saveGrade } from '@/actions/grading';
+import { saveGrade, reopenSubmission } from '@/actions/grading';
 import { FlashFromParams } from '@/components/Alert';
+import ConfirmButton from '@/components/ConfirmButton';
 import { num, formatDate, gradePillClass, GRADE_SCALE } from '@/lib/grading';
 
 export const dynamic = 'force-dynamic';
@@ -82,13 +83,25 @@ export default async function SubmissionsPage({ params, searchParams }) {
                       {student.email} · Submitted {formatDate(s.submitted_at)}
                     </p>
                   </div>
-                  {graded ? (
-                    <span className={`pill ${gradePillClass(s.grade)}`}>
-                      {num(s.total_score)}/{num(s.max_score)} · {num(s.percentage)}% · {s.grade}
-                    </span>
-                  ) : (
-                    <span className="pill bg-amber-100 text-amber-700">Not graded</span>
-                  )}
+                  <div className="flex flex-col items-end gap-2">
+                    {graded ? (
+                      <span className={`pill ${gradePillClass(s.grade)}`}>
+                        {num(s.total_score)}/{num(s.max_score)} · {num(s.percentage)}% · {s.grade}
+                      </span>
+                    ) : (
+                      <span className="pill bg-amber-100 text-amber-700">Not graded</span>
+                    )}
+                    <form action={reopenSubmission}>
+                      <input type="hidden" name="assignment_id" value={assignment.id} />
+                      <input type="hidden" name="submission_id" value={s.id} />
+                      <ConfirmButton
+                        className="btn btn-danger btn-sm"
+                        message="Remove this submission so the student can answer again? Their current answers and grade will be permanently deleted."
+                      >
+                        Allow resubmit
+                      </ConfirmButton>
+                    </form>
+                  </div>
                 </div>
 
                 <hr className="border-slate-200 my-4" />

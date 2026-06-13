@@ -58,3 +58,24 @@ export async function saveGrade(formData) {
   redirect(`/teacher/submissions/${assignmentId}?success=` +
     encodeURIComponent(`Grade saved: ${num(total)}/${num(max)} (${num(pct)}% · ${letter}).`));
 }
+
+// Removes a submission so the student can answer the assignment again.
+// Their previous answers and grade are deleted (answers cascade with the submission).
+export async function reopenSubmission(formData) {
+  const user = await requireRole('teacher');
+  const sb = supabase();
+
+  const assignmentId = Number(formData.get('assignment_id') || 0);
+  const submissionId = Number(formData.get('submission_id') || 0);
+
+  // Assignment must belong to this teacher.
+  const { data: a } = await sb
+    .from('assignments').select('id').eq('id', assignmentId).eq('teacher_id', user.id).maybeSingle();
+  if (!a) redirect('/teacher/dashboard?error=' + encodeURIComponent('Assignment not found.'));
+
+  await sb.from('submissions').delete().eq('id', submissionId).eq('assignment_id', assignmentId);
+
+  revalidatePath(`/teacher/submissions/${assignmentId}`);
+  redirect(`/teacher/submissions/${assignmentId}?success=` +
+    encodeURIComponent('Submission removed — the student can answer again while the assignment is open.'));
+}

@@ -14,6 +14,9 @@ export default function Nav({ user }) {
             <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-xs font-semibold capitalize">
               {user.role}
             </span>
+            <Link href="/account/password" className="btn btn-secondary btn-sm">
+              Password
+            </Link>
             <Link href="/logout" className="btn btn-secondary btn-sm">
               Log out
             </Link>
